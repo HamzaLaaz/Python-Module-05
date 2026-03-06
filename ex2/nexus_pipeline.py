@@ -3,13 +3,16 @@ from typing import Any, List, Dict, Union, Protocol
 
 
 class ProcessingStage(Protocol):
-
+    """Protocol defining the interface for all pipeline stages."""
     def process(self, data: Any) -> Any:
+        """Process data and return transformed result."""
         pass
 
 
 class InputStage:
+    """First pipeline stage: validates and parses raw input data."""
     def process(self, data: Any) -> Dict:
+        """Parse input into a typed dictionary for downstream stages."""
         if data is None or data == "":
             raise ValueError("Input: invalid or empty data")
         elif isinstance(data, list):
@@ -25,7 +28,9 @@ class InputStage:
 
 
 class TransformStage:
+    """Second pipeline stage: enriches and transforms parsed data."""
     def process(self, data: Any) -> Dict:
+        """Transform data based on its type."""
         if not isinstance(data, dict) or "data" not in data:
             raise ValueError("Transform: unexpected data format")
         data_type = data["type"]
@@ -51,7 +56,9 @@ class TransformStage:
 
 
 class OutputStage:
+    """Third pipeline stage: formats processed data for delivery."""
     def process(self, data: Any) -> str:
+        """Format the transformed data into a human-readable output."""
         if not isinstance(data, dict):
             return "Output: invalid data"
         data_type = data["type"]
@@ -64,13 +71,13 @@ class OutputStage:
             return f"Output: User activity logged: {count} actions processed"
         elif data_type == "JSON":
             value = data["data"]["value"]
-            return f"Output: Processed temperature reading: {value}°C "
-        "(Normal range)"
+            return (f"Output: Processed temperature reading: {value}°C "
+                    "(Normal range)")
         return "Output: unknown data type"
 
 
 class ProcessingPipeline(ABC):
-
+    """Abstract base class managing configurable processing stages."""
     def __init__(self, pipeline_id: str) -> None:
         self.pipeline_id = pipeline_id
         self.stages: List[Any] = []
@@ -81,9 +88,11 @@ class ProcessingPipeline(ABC):
         }
 
     def add_stage(self, stage: Any) -> None:
+        """Add a processing stage to the pipeline."""
         self.stages.append(stage)
 
     def run_pipeline(self, data: Any) -> str:
+        """Run data through all stages, with error recovery on failure."""
         result: Any = data
         for stage in self.stages:
             result = stage.process(result)
@@ -92,18 +101,21 @@ class ProcessingPipeline(ABC):
 
     @abstractmethod
     def process(self, data: Any) -> Any:
+        """Process data through this pipeline's format-specific logic."""
         pass
 
 
 class JSONAdapter(ProcessingPipeline):
-
+    """Pipeline adapter specialized for JSON format data."""
     def __init__(self, pipeline_id: str) -> None:
+        """Initialize with standard three-stage pipeline."""
         super().__init__(pipeline_id)
         self.add_stage(InputStage())
         self.add_stage(TransformStage())
         self.add_stage(OutputStage())
 
     def process(self, data: Any) -> str:
+        """Process JSON data through the pipeline."""
         try:
             return self.run_pipeline(data)
         except Exception as e:
@@ -112,14 +124,16 @@ class JSONAdapter(ProcessingPipeline):
 
 
 class CSVAdapter(ProcessingPipeline):
-
+    """Pipeline adapter specialized for CSV format data."""
     def __init__(self, pipeline_id: str) -> None:
+        """Initialize with standard three-stage pipeline."""
         super().__init__(pipeline_id)
         self.add_stage(InputStage())
         self.add_stage(TransformStage())
         self.add_stage(OutputStage())
 
     def process(self, data: Any) -> str:
+        """Process CSV data through the pipeline."""
         try:
             return self.run_pipeline(data)
         except Exception as e:
@@ -128,14 +142,16 @@ class CSVAdapter(ProcessingPipeline):
 
 
 class StreamAdapter(ProcessingPipeline):
-
+    """Pipeline adapter specialized for real-time stream data."""
     def __init__(self, pipeline_id: str) -> None:
+        """Initialize with standard three-stage pipeline."""
         super().__init__(pipeline_id)
         self.add_stage(InputStage())
         self.add_stage(TransformStage())
         self.add_stage(OutputStage())
 
     def process(self, data: Any) -> str:
+        """Process stream data through the pipeline."""
         try:
             return self.run_pipeline(data)
         except Exception as e:
@@ -144,21 +160,27 @@ class StreamAdapter(ProcessingPipeline):
 
 
 class NexusManager:
+    """Orchestrates multiple pipelines polymorphically."""
     def __init__(self) -> None:
+        """Initialize manager with empty pipeline list."""
         self.pipelines: List[ProcessingPipeline] = []
 
     def add_pipeline(self, pipeline: ProcessingPipeline) -> None:
+        """Register a pipeline with the manager."""
         self.pipelines.append(pipeline)
 
     def process_data(self, data: Any, pipeline_index: int) -> str:
+        """Route data to the specified pipeline by index."""
         pipeline = self.pipelines[pipeline_index]
         return pipeline.process(data)
 
     def get_stats(self) -> List[Dict]:
+        """Return statistics for all managed pipelines."""
         return [pipeline.stats for pipeline in self.pipelines]
 
 
-if __name__ == "__main__":
+def main() -> None:
+    """Main function demonstrating the enterprise pipeline system."""
     print("=== CODE NEXUS - ENTERPRISE PIPELINE SYSTEM ===\n")
     print("Initializing Nexus Manager...")
     print("Pipeline capacity: 1000 streams/second\n")
@@ -190,3 +212,7 @@ if __name__ == "__main__":
     print("Recovery successful: Pipeline restored, processing resumed")
 
     print("\nNexus Integration complete. All systems operational.")
+
+
+if __name__ == "__main__":
+    main()
