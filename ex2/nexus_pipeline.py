@@ -64,7 +64,8 @@ class OutputStage:
             return f"Output: User activity logged: {count} actions processed"
         elif data_type == "JSON":
             value = data["data"]["value"]
-            return f"Output: Processed temperature reading: {value}°C (Normal range)"
+            return f"Output: Processed temperature reading: {value}°C "
+        "(Normal range)"
         return "Output: unknown data type"
 
 
@@ -90,7 +91,7 @@ class ProcessingPipeline(ABC):
         return result
 
     @abstractmethod
-    def process(self, data: Any) -> str:
+    def process(self, data: Any) -> Any:
         pass
 
 
@@ -161,33 +162,27 @@ if __name__ == "__main__":
     print("=== CODE NEXUS - ENTERPRISE PIPELINE SYSTEM ===\n")
     print("Initializing Nexus Manager...")
     print("Pipeline capacity: 1000 streams/second\n")
-
     print("Creating Data Processing Pipeline...")
     print("Stage 1: Input validation and parsing")
     print("Stage 2: Data transformation and enrichment")
     print("Stage 3: Output formatting and delivery")
-
     manager = NexusManager()
     manager.add_pipeline(JSONAdapter("JSON_pipeline"))
     manager.add_pipeline(CSVAdapter("CSV_pipeline"))
     manager.add_pipeline(StreamAdapter("STREAM_pipeline"))
-
     print("\n=== Multi-Format Data Processing ===\n")
     print("Processing JSON data through pipeline...")
-    print(manager.process_data({"sensor": "temp", "value": 23.5, "unit": "C"}, 0))
-
+    print(manager.process_data({"sensor": "temp", "value": 23.5, "unit": "C"},
+                               0))
     print("\nProcessing CSV data through same pipeline...")
     print(manager.process_data("user,action,timestamp", 1))
-
     print("\nProcessing Stream data through same pipeline...")
     print(manager.process_data([22.1, 23.5, 21.8, 24.0, 22.5], 2))
-
     print("\n=== Pipeline Chaining Demo ===")
     print("Pipeline A -> Pipeline B -> Pipeline C")
     print("Data flow: Raw -> Processed -> Analyzed -> Stored")
     print("Chain result: 100 records processed through 3-stage pipeline")
     print("Performance: 95% efficiency, 0.2s total processing time")
-
     print("\n=== Error Recovery Test ===")
     print("Simulating pipeline failure...")
     print("Error detected in Stage 2: Invalid data format")
